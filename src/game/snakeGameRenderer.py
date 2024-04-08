@@ -1,15 +1,6 @@
 import tkinter as tk
 import os
-
-class SnakeGameState:
-    def __init__(self, snake, food, score):
-      self.snake = snake
-      self.food = food
-      self.score = score
-
-    def __str__(self):
-      return f"Snake: {self.snake}, Food: {self.food}, Score: {self.score}"
-    
+from model import SnakeGameState
       
 
 class SnakeGameRenderer:
@@ -38,7 +29,7 @@ class SnakeGameRenderer:
           snake = eval(lines[i])
           food = eval(lines[i+1])
           score = lines[i+2]
-          game_state = SnakeGameState(snake, food, score)
+          game_state = SnakeGameState.SnakeGameState(snake, food, score)
           self.game_states.append(game_state)
 
     def gameloop(self):
