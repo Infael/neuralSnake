@@ -21,6 +21,8 @@ fitness = steps + (2**points + (points**2.1) * 500) - ((points**1.2) * ((0.25 * 
 
 Evolution algorithm consist of population of specific size, mutation rate, elitism (with editable rate). By default for selection is used roulette selection. Can be changed for implemented tournament selection. There is also parameter for tournament size. All mentioned values can be changed in main.py file. For crossover is curently used crossover for each weight in layer. Can be also switched for implemented one-point crossover, but I didn't tried it much.
 
+In each generation every agent in population is playing (by default) 3 games and for fitness is used average points gained and steps taked from those 3 games. This limits snakes that were just lucky or those that were unlucky.
+
 ## Install dependencies
 
 ```bash
