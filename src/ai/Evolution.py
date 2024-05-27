@@ -7,7 +7,7 @@ import os
 
 class Evolution:
     def __init__(self, population_size, mutation_rate, elitism_rate, tournament_size = 0.1, seed = 42):
-        self.name = f"EV_{datetime.now().strftime("%H:%M")}"
+        self.name = f"EV_{datetime.now().strftime("%H:%M")}_E_{elitism_rate}_M_{mutation_rate}"
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.elitism_rate = elitism_rate
