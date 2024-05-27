@@ -58,7 +58,9 @@ class EvolutionPlotter:
     def create_plot_points(self):
         plt.plot(self.generation, self.best_agent_points, label="Best Points")
         plt.plot(self.generation, self.average_points, label="Average Points")
-        plt.plot(self.generation, self.points_standard_deviation, label="Standard Deviation")
+        # plot standard deviation as a shaded area
+        plt.fill_between(self.generation, [x - y for x, y in zip(self.average_points, self.points_standard_deviation)],
+         [x + y for x, y in zip(self.average_points, self.points_standard_deviation)], alpha=0.4, label="Standard Deviation", facecolor=(0,.9,.2,.6))
         plt.legend()
         
     def plot_fitness(self):
@@ -87,7 +89,7 @@ class EvolutionPlotter:
 def main(file_name):
     evolution_data = EvolutionPlotter(file_name)
     evolution_data.read_data(file_name)
-    evolution_data.plot_fitness()
+    # evolution_data.plot_fitness()
     evolution_data.plot_points()
         
 

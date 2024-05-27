@@ -2,17 +2,24 @@ import numpy as np
 from ..game.model.SnakeGameState import SnakeGameState
 
 # Snake Agent with 8x3 input and 4 output
-# 8x3 input: 8 directions, 3 possible v alues (if he sees walls, food or snake) + 4 direction of movement
+# 8x3 input: 8 directions, 3 possible values (if he sees walls, food or snake) + 4 direction of movement
 # 4 output: 4 possible directions for the next move
-# 2 x 18 neurons in hidden layers (2 layers)
+# 2 hidden layers with adjustable size (default 20 and 12 neurons)
+
+# Enhanced mutations option - when enabled, agent have a chance (equal to mutation rate) for each hidden layer to develop a new layer.
+#                             New layer will be a copy of the layer that is being mutated. 
+#                             Also each each neuron has a chance (equal to mutation rate) to be removed or copied to the same layer.
+
+# ENHANCED MUTATIONS ARE NOT IMPLEMENTED YET
 
 BIAS = 0
 FOOD_AND_TAIL_VISION_BINARY = True
 
 class Agent:
-    def __init__(self, agent_name, game_size, generator = None):
+    def __init__(self, agent_name, game_size, enhanced_mutations = False, generator = None):
         self.name = agent_name
         self.game_size = game_size
+        self.enhanced_mutations = enhanced_mutations
         self.fitness = 0
         self.points = 0
 
@@ -193,11 +200,12 @@ class Agent:
     
 
     def calculate_fitness(self, points, steps):
-        self.fitness = steps + (2**points + (points**2.1) * 500) - ((points**1.2) * ((0.25 * steps)**1.3))
+        self.fitness = self.get_fitness(points, steps)
 
 
-    def get_fitness(self, score, steps):
-        return steps + (2**score + (score**2.1) * 500) - ((score**1.2) * ((0.25 * steps)**1.3))
+    def get_fitness(self, points, steps):
+        return steps + (2**points + (points**2.1) * 500) - ((points**1.2) * ((0.25 * steps)**1.3))
+        # return steps * steps * (2 ** points) if points < 10  else steps * steps * (2 ** 10) * (points - 9)
 
 
     def clone(self):
