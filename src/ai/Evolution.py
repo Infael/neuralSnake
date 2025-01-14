@@ -33,7 +33,7 @@ class Evolution:
         # create folder "data" if not exists
         Path("data").mkdir(parents=True, exist_ok=True)
         # create folder "data/generation_1" if not exists
-        Path(f"data/generation_{self.generation}").mkdir(parents=True, exist_ok=True)
+        Path(f"data_{self.mutation_rate}_{self.elitism_rate}/generation_{self.generation}").mkdir(parents=True, exist_ok=True)
         for i in range(self.population_size):
             self.population.append(Agent("Agent-" + str(i), game_size, generator=self.generator))
             
@@ -42,7 +42,7 @@ class Evolution:
         self.generation += 1
         self.selection()
         # create folder "data/generation_n" if not exists
-        Path(f"data/generation_{self.generation}").mkdir(parents=True, exist_ok=True)
+        Path(f"data_{self.mutation_rate}_{self.elitism_rate}/generation_{self.generation}").mkdir(parents=True, exist_ok=True)
         # update names of agents
         for i, agent in enumerate(self.population):
             agent.name = "Agent-" + str(i)
@@ -234,6 +234,6 @@ class Evolution:
         self.population = new_population
         
         # create folder "data" if not exists
-        Path("data").mkdir(parents=True, exist_ok=True)
+        Path("data_{self.mutation_rate}_{self.elitism_rate}").mkdir(parents=True, exist_ok=True)
         # create folder "data/generation_1" if not exists
-        Path(f"data/generation_{self.generation}").mkdir(parents=True, exist_ok=True)
+        Path(f"data_{self.mutation_rate}_{self.elitism_rate}/generation_{self.generation}").mkdir(parents=True, exist_ok=True)

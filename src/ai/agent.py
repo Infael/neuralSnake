@@ -204,8 +204,8 @@ class Agent:
 
 
     def get_fitness(self, points, steps):
-        return steps + (2**points + (points**2.1) * 500) - ((points**1.2) * ((0.25 * steps)**1.3))
-        # return steps * steps * (2 ** points) if points < 10  else steps * steps * (2 ** 10) * (points - 9)
+        # return steps + (2**points + (points**2.1) * 500) - ((points**1.2) * ((0.25 * steps)**1.3))
+        return steps * steps * (2 ** points) if points < 10  else steps * steps * (2 ** 10) * (points - 9)
 
 
     def clone(self):
