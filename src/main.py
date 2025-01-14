@@ -7,12 +7,12 @@ import random
 import os
 
 
-GENERATIONS = 1000
+GENERATIONS = 500
 POPULATION_SIZE = 500
-MUTATION_RATE = 0.05
-ELITISM_RATE = 0.01 # 5 agents
-SEED = 541
-GAMES_COUNT_FOR_EACH_AGENT_IN_EACH_GENERATION = 5
+MUTATION_RATE = 0.2
+ELITISM_RATE = 0.002
+SEED = 42
+GAMES_COUNT_FOR_EACH_AGENT_IN_EACH_GENERATION = 3
 
 random.seed(SEED)
 
@@ -30,14 +30,14 @@ def main(generationFile = None, generation = 0):
     while evolution.generation <= GENERATIONS:
         start_generation = time.time()
         for agent in evolution.population:
-            Path(f"data/generation_{evolution.generation}/{agent.name}").mkdir(parents=True, exist_ok=True)
-            agent.save_brain(f"data/generation_{evolution.generation}/{agent.name}/brain")
+            Path(f"data_{MUTATION_RATE}_{ELITISM_RATE}/generation_{evolution.generation}/{agent.name}").mkdir(parents=True, exist_ok=True)
+            agent.save_brain(f"data_{MUTATION_RATE}_{ELITISM_RATE}/generation_{evolution.generation}/{agent.name}/brain")
             # Every agent will play n games
             best_points = 0
             average_points = 0
             average_steps = 0
             for i in range(GAMES_COUNT_FOR_EACH_AGENT_IN_EACH_GENERATION):
-                game = SnakeGame(f"data/generation_{evolution.generation}/{agent.name}/game-{i}", game_size, 101)
+                game = SnakeGame(f"data_{MUTATION_RATE}_{ELITISM_RATE}/generation_{evolution.generation}/{agent.name}/game-{i}", game_size, 101)
                 alive, points, steps = game.move(agent.get_next_move(game.get_game_state()))
                 while alive:
                     alive, points, steps = game.move(agent.get_next_move(game.get_game_state()))
@@ -54,8 +54,8 @@ def main(generationFile = None, generation = 0):
 
         evolution.calculate_best_points_and_score()
         evolution.save_generation_data()
-        plot.add_data(evolution.get_actual_generation_data())
-        plot.plot_data_real_time()
+        # plot.add_data(evolution.get_actual_generation_data())
+        # plot.plot_data_real_time()
         
         print(f"Generation: {evolution.generation}, Generation Average: {evolution.average_fitness}\nBest Fitness: {evolution.best_agent.fitness}, Best Points: {evolution.best_agent.points}, Best Agent: {evolution.best_agent.name}")
         evolution.breed_population()

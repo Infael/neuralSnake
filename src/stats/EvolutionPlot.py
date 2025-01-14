@@ -85,12 +85,51 @@ class EvolutionPlotter:
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
 
+class EvolutionStats:
+    def __init__(self, filename):
+        self.name = filename
+        self.bestPoints = None
+        self.bestPointsGeneration = None
+        self.bestPointsAgent = None
+        self.bestAveragePoints = None
+        self.bestAveragePointsGeneration = None
+
+        self.lastGenerationBestPoints = None
+        self.lastGenerationBestPointsAgent = None
+        self.lastGenerationAveragePoints = None
+        self.read_data(filename)
+        self.print_data()
+
+    def read_data(self, filename):
+        with open(filename, "r") as f:
+            lines = f.readlines()
+            for line in lines[1:]:
+                data = line.split(",")
+                if self.bestPoints == None or float(data[6]) > self.bestPoints:
+                    self.bestPoints = float(data[6])
+                    self.bestPointsGeneration = int(data[0])
+                    self.bestPointsAgent = data[7]
+                if self.bestAveragePoints == None or float(data[3]) > self.bestAveragePoints:
+                    self.bestAveragePoints = float(data[3])
+                    self.bestAveragePointsGeneration = int(data[0])
+            self.lastGenerationBestPoints = float(lines[-1].split(",")[6])
+            self.lastGenerationAveragePoints = float(lines[-1].split(",")[3])
+            self.lastGenerationBestPointsAgent = lines[-1].split(",")[7]
+    
+    def print_data(self):
+        print(f"Best Points: {self.bestPoints} in Generation {self.bestPointsGeneration} by Agent {self.bestPointsAgent}")
+        print(f"Best Average Points: {self.bestAveragePoints} in Generation {self.bestAveragePointsGeneration}")
+        print(f"Last Generation Best Points: {self.lastGenerationBestPoints} by Agent {self.lastGenerationBestPointsAgent}")
+        print(f"Last Generation Average Points: {self.lastGenerationAveragePoints} ")
+        
 
 def main(file_name):
+    EvolutionStats(file_name)
     evolution_data = EvolutionPlotter(file_name)
     evolution_data.read_data(file_name)
     # evolution_data.plot_fitness()
     evolution_data.plot_points()
+
         
 
 if __name__ == "__main__":
