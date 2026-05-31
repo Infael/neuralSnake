@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="sk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>SnakeEvolution — Wiki</title>
+    <link rel="stylesheet" href="wiki.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"
+    />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+      onload="
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+          ],
+        })
+      "
+    ></script>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <h1>SnakeEvolution</h1>
+        <div class="meta">
+          Simulácia evolúcie neurónovej siete — Autor: Michal Štefaňák
+        </div>
+        <div class="lang-switch"><a href="index.html">English</a></div>
+      </div>
+    </header>
+
+    <main class="container">
+      <article>
+        <h3>Obsah</h3>
+        <ol>
+          <li>
+            <a href="#description">Popis</a>
+            <ol>
+              <li><a href="#problem">Definícia problému</a></li>
+              <li><a href="#goal">Cieľ</a></li>
+            </ol>
+          </li>
+          <li><a href="#method">Metóda</a></li>
+          <li>
+            <a href="#model">Model</a>
+            <ol>
+              <li><a href="#agents">Agenti</a></li>
+              <li><a href="#environment">Prostredie</a></li>
+              <li><a href="#fixed">Pevné premenné</a></li>
+              <li><a href="#free">Voľné premenné</a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#proces">Proces vývoja</a>
+            <ol>
+              <li><a href="#first">Prvé zjedenie</a></li>
+              <li><a href="#searching">Hľadá jedlo</a></li>
+              <li><a href="#lifespan">Životnosť hada</a></li>
+              <li><a href="#alive">ONO TO ŽIJE</a></li>
+            </ol>
+          </li>
+          <li><a href="#results">Výsledky</a></li>
+          <li><a href="#conclusion">Záver</a></li>
+        </ol>
+
+        <h3 id="description">Popis</h3>
+        <p>
+          Pôvodná hra Snake vznikla už v roku 1976. Zaujímavé je že pôvodná
+          verzia bola pre dvoch hráčov. Jednoduchosť a chytľavý koncept túto hru
+          spopularizovali až sa jej najpopulárnejšia varianta dostala v roku
+          1998 na mobilné telefóny Nokia. Túto verziu už väčšina ľudí dobre
+          pozná. Na malej statickej, väčšinou štvorcovej obrazovke hráč ovláda
+          hada, s ktorým zbiera jedlo po, ktoré sa náhodne objavuje na mape.
+          Zjedením jedla had rastie a zaberá väčšiu časť mapy. S každým získaným
+          jedlom hráč dostane bod, had narastie a hra je ťažšia, pretože hráč s
+          hadom nemôže naraziť do do svojeho chvostu, alebo do steny a miesta je
+          stále menej a menej. To si vyžaduje chvíľu praxe a určitú známku
+          stratégie ako hru hrať. Bežný hráč sa takéto jednoduché pravidlá
+          rýchlo naučí a dosiahne celkom zaujímavý výsledok. No čo keby sme to
+          chceli naučiť len pár neurónov? Dokáže sa pár neurónov naučiť zbierať
+          body v tejto klasickej hre, alebo je na to potrebné človeka? To sa
+          dozvieme v tejto práci.
+        </p>
+
+        <h3 id="problem">Definícia problému</h3>
+        <p>
+          Aby sme pár neurónov (ďalej už neurálnu sieť) naučili hrať hru Snake,
+          môžeme použiť množstvo metód ako napríklad posilované učenie, alebo
+          evolučný algoritmus. Práve evolučný algoritmus som sa rozhodol použiť,
+          pretože cieľom práce je niečo simulovať a simulovať evolúciu znie
+          dobre. No evolučný algoritmus je potrebné správne nastaviť. Obsahuje
+          veľké množstvo parametrov, ktorých nastavovaním sa dá evolúcia posúvať
+          správnym smerom a meniť rýchlosť tohoto posúvania.
+        </p>
+
+        <h3 id="goal">Cieľ</h3>
+        <p>Práca má dva ciele, jeden ofociálny a jeden neoficiálny.</p>
+        <ul>
+          <li>
+            Oficiálny cieľ práce je zistiť najvhodnejšie nastavenie parametrov
+            evolučného algoritmu, aby sme urýchlili učenie neurónovej siete.
+          </li>
+          <li>
+            Neoficiálny cieľ práce - môj súkromný cieľ je vycvičiť agenta, ktorý
+            stabilne dosiahne aspoň skóre 10 a nebude to vyzerať ako náhodné
+            zbieranie bodov.
+          </li>
+        </ul>
+
+        <h3 id="method">Metóda</h3>
+        <p>
+          Ako už bolo spomínané, práca bude využívať evolučný algoritmus, aby
+          simulovala evolúciu neurínovej siete. Pre tento účel budem používať
+          programovací jazyk Python. Ten ponúka množstvo knižníc, ktoré k tomu
+          môžem využiť. Pre prácu s maticami váh neurónovej siete knižnicu
+          Numpy. Pre interpretovanie výsledkov a vykresľovanie grafov knižnicu
+          Matplotlib. A v neposlednom rade pre (nie tak dôležité, ale pre mňa
+          veľmi dôležité) zobrazenie hry knižnicu Tkinter.
+        </p>
+
+        <h3 id="model">Model</h3>
+        <h4 id="agents">Agenti</h4>
+        <p>
+          Každý agent pozostáva z neurónovej siete. Agent "vidí" do ômych smerov
+          (hore, dole, vľavo, vpravo, vpravo-hore, vpravo-dole, vľavo-dole,
+          vľavo-hore) od hlavy hada. Pre každý smer vidí vzdialenosť k stene,
+          vzdialenosť k jablku (ak ho v daný smer vidí) a vzdialenosť ku svojemu
+          chvostu (ak ho v daný smer vidí). Čiže na vstupnej vrstve má 24
+          neurónov (8 smerov x 3 indikátory) + 4 neuróny predstavujúce smer do
+          ktorého ide hlava hada. Celkovo 28 neurónov. Počet skrytých vrstiev a
+          neurónov v nich je pre zjednodušenie problému pevne daný - skryté
+          vrstvy sú dve a obsahujú 20 a 12 neurónov. Váhy väzieb medzi neurónami
+          sú z počiatku náhodné z uniformného rozdelenia, následne sú menené
+          mutáciami agentov. Na výstupe neurónovej siete je smer akým sa má had
+          ďalej uberať, čiže 4 neuróny pre Hore, Dole, Vľavo, Vpravo.
+        </p>
+
+        <h4 id="activations">Aktivácie</h4>
+        <p>Neuróny skrytých vrstiev používajú ako aktivačnú funkciu ReLU:</p>
+        <p>$$\mathrm{ReLU}(x)=\max(0, x)$$</p>
+        <p>
+          Neuróny na poslednej výstupnej vrstve používajú ako aktivačnú funkciu
+          Sigmoid a ako výstup sa vyberie neurón s najväčšou hodnotou výstupu:
+        </p>
+        <p>$$\sigma(x)=\frac{1}{1+e^{-x}}$$</p>
+
+        <h4 id="environment">Prostredie</h4>
+        <p>
+          Prostredím v ktorom agenti pôsobia je obyčajná hra snake ako aj
+          evolúcia v ktorej sa nachádzajú. Hra má rozmery 10x10 (výška a šírka)
+          a jedlo sa generuje na náhodnú pozíciu. Pre simuláciu evolúcie je
+          potrebné simulovať viacero generácií E a v každej generácii je
+          populácia agentov o veľkosti N. Každý agent hrá samostatnú inštanciu
+          hry Snake g krát (g je viac ako 1, pretože agenti môžu mať niekedy
+          "smolu" a skončiť rýchlo - tým by sme zabili potencionálne úspešných
+          jedincov, alebo "šťastie" - tým by sme odmeňovali jedincov, ktorý si
+          to nezaslúžia). Výsledky g hier sa pre každého agenta spriemerujú.
+        </p>
+
+        <p>
+          Po odohraní hier agentov v danej generácii sa vypočíta fitness (skóre)
+          najlepšieho agenta. Fitness sa počíta ako funkcia počtu dosiahnutých
+          bodov a počtu krokov, ktoré agent urobil. Konkrétna funkcia vyzerá
+          nasledovne[1]:
+        </p>
+        <p>
+          Fitness funkcia použitá pre hodnotenie. Zdroj: SnakeFusion - fitness
+          function kde steps je počet krokov, ktoré agent vykonal a points sú
+          body, ktoré získal. Táto funkcia sa po mnohých pokusoch ukázala byť
+          najefektívnejšia. Cieľom tejto fitness funkcie je zo začiatku
+          odmeňovať agentov, ktorý prežijú čo najdlhšie, čiže urobia viacej
+          krokov, no neskôr odmeňovať zbieranie bodov. Pre menšie hodnoty počtu
+          bodov (&lt;10), fitness hodnota rýchlo rastie s narastajúcim počtom
+          bodov. Toto môže byť užitočné na rýchle odmeňovanie prvých úspechov.
+          Pre väčšie hodnoty počtu bodov (&ge;10), exponenciálny rast sa
+          stabilizuje a ďalej sa zvyšuje iba lineárne s počtom bodov. Toto môže
+          zabrániť nekontrolovanému rastu fitness hodnoty pri veľmi vysokých
+          počtoch bodov a udržiavať výpočty zvládnuteľnými.
+        </p>
+
+        <p>
+          Podľa fitness sa vyberú jedinci pre ďalšiu generáciu (podľa miery
+          elitizmu e). Teda sa vyberie N * e najlepších jedincov pre ďalšiu
+          populáciu. Ďalej sa generácia doplní novo vytvorenými agentami
+          (potomkami), ktorí vzniknú krížením dvoch náhodne vybratých agentov
+          (ruletový výber). Kríženie prebieha prechádzaním váh rodičov a
+          náhodným výberom váhy jedného z rodičov pre potomka. Potomkovia sú
+          následne zmutovaní podľa miery mutácie m (pridanie hodnoty z
+          normálneho rozdelenia s pravdepodobnosťou m pre každú váhu).
+        </p>
+
+        <h4 id="fixed">Pevné premenné</h4>
+        <ul>
+          <li>Počet generácií G = 500</li>
+          <li>Veľkosť populácie N = 500</li>
+          <li>Počet hier jedného jedinca g = 3</li>
+          <li>Počet skrytých vrstiev = 2</li>
+          <li>Počet neurónov na prvej skrytej vrstve = 20</li>
+          <li>Počet neurónov na druhej skrytej vrstve = 12</li>
+          <li>Aktivačná funkcia neurónov na skrytých vrstvách = ReLU</li>
+          <li>Aktivačná funkcia na výstupnej vrstve = Sigmoid</li>
+          <li>Veľkosť hernej plochy = 10x10 polí</li>
+        </ul>
+
+        <h4 id="free">Voľné premenné</h4>
+        <p>Miera elitizmu e a miera mutácie m.</p>
+
+        <h3 id="process">Proces vývoja</h3>
+        <p>
+          Táto časť práce je myslená len ako súhrn zaujímavostí na ktoré som pri
+          implpementácií narazil. Nie je podstatná pre záver práce, no prišlo
+          mi, že by bola škoda sa o tom nezmieniť.
+        </p>
+
+        <h4 id="first">Prvé zjedenie</h4>
+        <p>
+          Pôvodne som hru púšťal na väčšej mape, to mi ale neskôr prišlo
+          zbytočné. Každopádne tu je prvé zjedenie (čo bola len náhoda, že tam
+          zabočil, ale aj tak, bolo to super):
+        </p>
+        <p><img class="resp" src="assets/FirstFood.gif" alt="FirstFood" /></p>
+        <p>
+          Takéto náhody je cieľom obmedziť, aby bolo zrejme že had ide po jedle.
+        </p>
+
+        <h4 id="searching">Hľadá jedlo</h4>
+        <p>
+          Prvý krát, čo som začínal mať pocit, že agent ide za jedlom a nie je
+          to náhoda bolo pri tomto pokuse kde dosiahol 4 body:
+        </p>
+        <p><img class="resp" src="assets/First4.gif" alt="First4" /></p>
+
+        <h4 id="lifespan">Životnosť hada</h4>
+        <p>
+          Ako môžete vidieť na predchádzajúcom gife, tak had má parameter Life -
+          ten som musel pridať, pretože z toho ako funguje fitness funkcia sa
+          stávalo, že sa agenti zacyklili, pretože zistili, že keď budú krúžiť,
+          tak nikdy neumrú a dosiahnu veľké skóre. Agenti majú teraz životnosť,
+          počas ktorej musia nájsť ďalšie jedlo. Ak jedlo nájdu, tak sa im
+          vyresetuje životnosť, ak nie, tak zomrú. Ďalej je vidno že som zmenšil
+          mapu, pretože veľkosť mapy hrá rolu v dĺžke hry nie v procese učenia a
+          potreboval som učenie urýchliť. A TEN HAD DOSIAHOL 6 BODOV!! Tu je
+          príklad daného zacykleného hada:
+        </p>
+        <p><img class="resp" src="assets/SnakeCycle.gif" alt="SnakeCycle" /></p>
+
+        <h4 id="alive">ONO TO ŽIJE</h4>
+        <p>
+          A po tisíckach neúspešných agentov, po stovkách generácií to konečne
+          prišlo. Začali chodiť za jedlom. Najprv zjedol 6, potom 8, potom 10
+          kúskov. S každým pokrokom som sa tešil viac a viac. Bolo vtipné
+          sledovať ako pri generácii okolo 400 úspešný agent vedel nahrať celkom
+          dobré skóre, no bál sa vojsť do ľavého horného rohu (for some reason).
+          Ešte 100 generácií po ňom, nechodili žiadny agenti do toho istého rohu
+          a za každú cenu sa mu vyhýbali. A asi po 800 generáciách (približne 2
+          milióny hier) prišiel najlepší výsledok - skóre 42!!!
+        </p>
+        <p>
+          <img class="resp" src="assets/SnakeRecord.gif" alt="SnakeRecord" />
+        </p>
+        <p>
+          Bohužiaľ tento výsledok sa mi znovu nepodarilo zopakovať. A pevne
+          zadaný seed pre generovanie náhodných hodnôt som naimplementoval až po
+          tomto pokuse, čiže neviem aké náhodné hodnoty boli použité pri
+          trénovaní tohoto agenta. Každopádne všetky ďalšie pokusy nemali
+          problém disiahnuť skóre okolo tridsiatky. Ale(!) ukladal som si váhy
+          vrstiev (proste jeho mozog) všetkých agentov. A tento mozog som uložil
+          tiež, takže ho môžem púšťať hrať znovu a znovu:
+        </p>
+        <div class="grid">
+          <div class="card">
+            <img class="resp" src="assets/LoadedBrain.gif" alt="LoadedBrain" />
+          </div>
+          <div class="card">
+            <img class="resp" src="assets/BestBrain.gif" alt="BestBrain" />
+          </div>
+          <div class="card">
+            <img class="resp" src="assets/BestBrain2.gif" alt="BestBrain2" />
+          </div>
+        </div>
+        <p>
+          S tým, že pri každom behu dosiahne výsledok ktorý je lepší ako 10
+          bodov, čiže neoficiálny cieľ je splnený! Jo a pridal som hlavičku,
+          nech je lepšie vidno, čo sa deje.
+        </p>
+
+        <h3 id="results">Výsledky</h3>
+        <p>
+          Teraz oficiálnejšia časť - zisťovanie najvhodnejších parametrov pre
+          mieru mutácie a mieru elitizmu. Preto si zavedieme tabuľku s hodnotami
+          miery elitizmu v hlavičke a hodnotami miery mutácie v prvom stĺpci.
+          Budeme hodnotiť aké najväčšie skóre a aké priemerné skóre dosiahnú
+          agenti v evolúcii s danými parametrami. (Zaujímavosť: v každej bunke
+          tabuľky je teda 500 generácií po 500 jedincoch ktorý hrajú 3 hry - to
+          je 750_000 hier na bunku. Výpočet jednej evolúcie (bunky v tabuľke) u
+          mňa lokálne bežal viac ako pol hodinu) Všetky testy budú mať rovnaký
+          seed = 42. Umiestnenie grafov pod tabuľkami zodpovedá výsledkom v
+          bunkách tabuliek.
+        </p>
+
+        <h4>Tabuľky výsledkov</h4>
+        <p>
+          Najlepšie skóre (celkovo), priemerné skóre, najlepšie skóre v
+          poslednej generácii a priemerné skóre v poslednej generácii sú
+          zobrazené nižšie.
+        </p>
+        <p>
+          Nižšie sú grafy (PNG) pre jednotlivé kombinácie elitizmu a mutácie:
+        </p>
+        <div class="grid">
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_002_01.png"
+              alt="e=0.002 m=0.01"
+            />
+            <div>e=0.002, m=0.01</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_002_05.png"
+              alt="e=0.002 m=0.05"
+            />
+            <div>e=0.002, m=0.05</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_002_1.png"
+              alt="e=0.002 m=0.1"
+            />
+            <div>e=0.002, m=0.1</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_002_2.png"
+              alt="e=0.002 m=0.2"
+            />
+            <div>e=0.002, m=0.2</div>
+          </div>
+
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_01_01.png"
+              alt="e=0.01 m=0.01"
+            />
+            <div>e=0.01, m=0.01</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_01_05.png"
+              alt="e=0.01 m=0.05"
+            />
+            <div>e=0.01, m=0.05</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_01_1.png"
+              alt="e=0.01 m=0.1"
+            />
+            <div>e=0.01, m=0.1</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_01_2.png"
+              alt="e=0.01 m=0.2"
+            />
+            <div>e=0.01, m=0.2</div>
+          </div>
+
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_05_01.png"
+              alt="e=0.05 m=0.01"
+            />
+            <div>e=0.05, m=0.01</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_05_05.png"
+              alt="e=0.05 m=0.05"
+            />
+            <div>e=0.05, m=0.05</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_05_1.png"
+              alt="e=0.05 m=0.1"
+            />
+            <div>e=0.05, m=0.1</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_05_2.png"
+              alt="e=0.05 m=0.2"
+            />
+            <div>e=0.05, m=0.2</div>
+          </div>
+        </div>
+
+        <h2 id="conclusion">Záver</h2>
+        <p>
+          Z pozorovaných výsledkov môžeme odvodiť, že evolučnému algoritmu sa
+          najviac darí trénovať neurónové siete hrať hru snake pri miere
+          elitizmu 0.002 a pri miere mutácie 0.05.
+        </p>
+
+        <p>
+          Zaujímavé je, že miera elitizmu 0.002 pri populácii 500 jedincov
+          predstavuje jedného agenta, čiže z každej populácie postúpi do ďalšej
+          generácie iba jeden najlepší jedinec. Ďalším zaujímavým pozorovaním je
+          že pri väčšine evolúcií mali agenti najväčší rast v bodoch pri
+          generácii okolo 200+. Pri vysokej miere mutácie sa síce agenti učili
+          rýchlejšie, ale získané znalosti si nedokázali udržať. Z hľadiska
+          smerodajnej odchylky a priemerných získaných bodov mali veľmi dobré
+          výsledky evolúcie s mierou mutácie 0.05, kde sa dal pozorovať rýchli
+          rast, ktorý bol ale stále udržateľný.
+        </p>
+      </article>
+    </main>
+
+    <footer>
+      <p>Michal Štefaňák 2024</p>
+    </footer>
+  </body>
+</html>
+

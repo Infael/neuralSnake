@@ -1,0 +1,90 @@
+body {
+  font-family:
+    Segoe UI,
+    Roboto,
+    Arial,
+    sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  color: #111;
+}
+header {
+  background: transparent;
+  color: inherit;
+  padding: 18px 24px;
+  border-bottom: 1px solid #e6e9ee;
+}
+.container {
+  max-width: 980px;
+  margin: 24px auto;
+  padding: 0 18px;
+}
+h1,
+h2,
+h3 {
+  color: inherit;
+}
+nav.toc {
+  background: #fff;
+  border: 1px solid #e6e9ee;
+  padding: 12px;
+  margin-bottom: 18px;
+}
+.hero {
+  margin-bottom: 18px;
+}
+img.resp {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #e6e9ee;
+  padding: 4px;
+  background: #fff;
+}
+p > img.resp,
+.card > img.resp {
+  display: block;
+  margin: 12px auto;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+.card {
+  background: #fff;
+  border: 1px solid #e6e9ee;
+  padding: 8px;
+  text-align: center;
+}
+.lang-switch {
+  float: right;
+  margin-top: -46px;
+}
+pre.raw {
+  white-space: pre-wrap;
+  font-family: inherit;
+  background: #fbfcfd;
+  border: 1px solid #eef2f6;
+  padding: 12px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12px 0;
+  background: #fff;
+}
+table th,
+table td {
+  border: 1px solid #d8dbe0;
+  padding: 8px;
+  text-align: center;
+}
+footer {
+  color: #666;
+  padding: 18px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+

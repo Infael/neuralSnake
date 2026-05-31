@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>SnakeEvolution — Wiki (English)</title>
+    <link rel="stylesheet" href="wiki.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"
+    />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+      onload="
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+          ],
+        })
+      "
+    ></script>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <h1>SnakeEvolution</h1>
+        <div class="meta">
+          Simulation of neural network evolution — Author: Michal Štefaňák
+        </div>
+        <div class="lang-switch">
+          <a href="sk.html">Slovensky</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <article>
+        <h3>Contents</h3>
+        <ol>
+          <li>
+            <a href="#description">Description</a>
+            <ol>
+              <li><a href="#problem">Problem definition</a></li>
+              <li><a href="#goal">Goal</a></li>
+            </ol>
+          </li>
+          <li><a href="#method">Method</a></li>
+          <li>
+            <a href="#model">Model</a>
+            <ol>
+              <li><a href="#agents">Agents</a></li>
+              <li><a href="#environment">Environment</a></li>
+              <li><a href="#fixed">Fixed variables</a></li>
+              <li><a href="#free">Free variables</a></li>
+            </ol>
+          </li>
+          <li>
+            <a href="#process">Development process</a>
+            <ol>
+              <li><a href="#first">First food</a></li>
+              <li><a href="#searching">Searching for food</a></li>
+              <li><a href="#lifespan">Snake lifespan</a></li>
+              <li><a href="#alive">IT'S ALIVE</a></li>
+            </ol>
+          </li>
+          <li><a href="#results">Results</a></li>
+          <li><a href="#conclusion">Conclusion</a></li>
+        </ol>
+
+        <h3 id="description">Description</h3>
+        <p>
+          The original Snake game dates back to 1976. Interestingly, the
+          earliest version was for two players. Its simple and addictive concept
+          popularised the game and the most famous variant appeared on Nokia
+          mobile phones in 1998. Most people recognise that version. On a small
+          static, usually square screen, the player controls a snake that
+          collects food which appears randomly on the map. Eating food grows the
+          snake and occupies more of the map. Each food gives one point; the
+          snake grows and the game becomes harder because the player must avoid
+          colliding with the snake's tail or the walls while space decreases.
+          This requires practice and some strategy. A human player learns these
+          simple rules quickly and can reach decent scores. But what if we
+          wanted to teach just a few neurons? Can a small neural network learn
+          to collect points in this classic game, or is a human necessary? That
+          is the question investigated here.
+        </p>
+
+        <h3 id="problem">Problem definition</h3>
+        <p>
+          To teach a small neural network to play Snake, we can use many
+          approaches such as reinforcement learning or an evolutionary
+          algorithm. I chose an evolutionary algorithm because the goal of this
+          project is to simulate evolution, and an evolutionary approach fits
+          well. The evolutionary algorithm needs careful configuration: it
+          contains many parameters that influence the direction and speed of
+          evolution.
+        </p>
+
+        <h3 id="goal">Goal</h3>
+        <p>The project has two goals: one official and one unofficial.</p>
+        <ul>
+          <li>
+            The official goal is to find suitable settings for the evolutionary
+            algorithm parameters to speed up learning of the neural network.
+          </li>
+          <li>
+            The unofficial/personal goal is to train an agent that reliably
+            scores at least 10 points and whose behavior is not just random
+            collecting.
+          </li>
+        </ul>
+
+        <h3 id="method">Method</h3>
+        <p>
+          As mentioned, this work uses an evolutionary algorithm to simulate
+          evolution of a neural network. The implementation uses Python. For
+          matrix operations we use NumPy; for plotting results we use
+          Matplotlib; and for rendering the game (not essential but handy) we
+          use Tkinter.
+        </p>
+
+        <h3 id="model">Model</h3>
+        <h4 id="agents">Agents</h4>
+        <p>
+          Each agent is a neural network. The agent "sees" in eight directions
+          (up, down, left, right, up-right, down-right, down-left, up-left) from
+          the snake's head. For each direction it senses the distance to the
+          wall, the distance to the apple (if visible in that direction), and
+          the distance to its own tail (if visible). Thus the input layer has 24
+          neurons (8 directions x 3 indicators) plus 4 neurons indicating the
+          current heading of the snake's head — 28 neurons in total. The number
+          of hidden layers and neurons is fixed for simplicity: two hidden
+          layers with 20 and 12 neurons. Weight matrices are initialized
+          uniformly at random and later changed by mutations. The output layer
+          has 4 neurons corresponding to Up, Down, Left, Right — the chosen
+          output is the neuron with the largest value.
+        </p>
+
+        <h4 id="activations">Activations</h4>
+        <p>Hidden-layer neurons use ReLU as the activation function:</p>
+        <p>$$\mathrm{ReLU}(x)=\max(0, x)$$</p>
+        <p>
+          The output-layer neurons use the Sigmoid activation; the final action
+          is the neuron with the highest output value:
+        </p>
+        <p>$$\sigma(x)=\frac{1}{1+e^{-x}}$$</p>
+
+        <h4 id="environment">Environment</h4>
+        <p>
+          The environment is the standard Snake game used in the evolutionary
+          simulation. The board is 10x10 (height x width) and food is placed at
+          random positions. To simulate evolution we run multiple generations E
+          and in each generation a population of N agents. Each agent plays g
+          independent games (g &gt; 1) because agents can be unlucky or lucky;
+          we average results of g games per agent.
+        </p>
+
+        <p>
+          After games are played, a fitness score for the best agent is
+          computed. Fitness is a function of points collected and steps taken.
+          The fitness function used (inspired by SnakeFusion) rewards surviving
+          longer initially and later rewards point collection. For small point
+          counts (&lt;10) fitness grows quickly with points; for larger point
+          counts (&ge;10) exponential growth stabilises and further increase is
+          roughly linear, preventing runaway fitness values for very high
+          scores.
+        </p>
+
+        <p>
+          Individuals for the next generation are selected based on fitness and
+          the elitism rate e: the top N * e individuals are copied directly. The
+          rest of the new generation is filled with offspring created by
+          crossing two randomly selected parents (roulette selection). Crossover
+          is performed by iterating through weights and randomly choosing the
+          weight from one parent. Offspring weights are then mutated with
+          probability m per weight (additive normal noise).
+        </p>
+
+        <h4 id="fixed">Fixed variables</h4>
+        <ul>
+          <li>Number of generations G = 500</li>
+          <li>Population size N = 500</li>
+          <li>Games per individual g = 3</li>
+          <li>Hidden layers = 2</li>
+          <li>Neurons in first hidden layer = 20</li>
+          <li>Neurons in second hidden layer = 12</li>
+          <li>Hidden-layer activation = ReLU</li>
+          <li>Output-layer activation = Sigmoid</li>
+          <li>Board size = 10x10 cells</li>
+        </ul>
+
+        <h4 id="free">Free variables</h4>
+        <p>Elitism rate e and mutation rate m.</p>
+
+        <h3 id="process">Development process</h3>
+        <p>
+          This section is a short summary of interesting observations
+          encountered during implementation. It is not essential to the
+          conclusion but worth mentioning.
+        </p>
+
+        <h4 id="first">First food</h4>
+        <p>
+          Initially I ran the game on a larger map, which later seemed
+          unnecessary. Here is the first time the agent ate food (it was mostly
+          luck, but still exciting):
+        </p>
+        <p><img class="resp" src="assets/FirstFood.gif" alt="FirstFood" /></p>
+        <p>
+          Such lucky events should be limited to make it clear the snake really
+          seeks food.
+        </p>
+
+        <h4 id="searching">Searching for food</h4>
+        <p>
+          The first time I felt the agent was really going for food and not just
+          lucky was during this run where it scored 4 points:
+        </p>
+        <p><img class="resp" src="assets/First4.gif" alt="First4" /></p>
+
+        <h4 id="lifespan">Snake lifespan</h4>
+        <p>
+          As visible in the previous GIF, I added a Life parameter because the
+          fitness design allowed agents to loop indefinitely and accumulate high
+          scores. Agents now have a lifespan and must find food before it
+          expires; finding food resets lifespan, otherwise the agent dies. I
+          also reduced the board size to speed up training. The snake reached 6
+          points in one run! Example of a looping snake:
+        </p>
+        <p><img class="resp" src="assets/SnakeCycle.gif" alt="SnakeCycle" /></p>
+
+        <h4 id="alive">IT'S ALIVE</h4>
+        <p>
+          After thousands of failed agents and hundreds of generations, agents
+          finally started to seek food consistently. First 6, then 8, then 10
+          pieces. Around generation ~400 a successful agent could reach good
+          scores but avoided the top-left corner for some reason. After ~800
+          generations (about 2 million games) the best result was a score of
+          42!!!
+        </p>
+        <p>
+          <img class="resp" src="assets/SnakeRecord.gif" alt="SnakeRecord" />
+        </p>
+        <p>
+          I couldn't reproduce that exact score later. I only implemented a
+          fixed random seed after that run, so I don't know the exact randomness
+          used. Subsequent runs reliably reached scores around 30. I saved
+          network weights (the agents' "brains") and can replay them:
+        </p>
+        <div class="grid">
+          <div class="card">
+            <img class="resp" src="assets/LoadedBrain.gif" alt="LoadedBrain" />
+          </div>
+          <div class="card">
+            <img class="resp" src="assets/BestBrain.gif" alt="BestBrain" />
+          </div>
+          <div class="card">
+            <img class="resp" src="assets/BestBrain2.gif" alt="BestBrain2" />
+          </div>
+        </div>
+        <p>
+          Each replay scores above 10 points, so the unofficial goal is met. I
+          also added a head to make the UI clearer.
+        </p>
+
+        <h3 id="results">Results</h3>
+        <p>
+          The official part: finding suitable mutation and elitism rates. We
+          create a table where elitism rates are the column headers and mutation
+          rates are the first column. We evaluate max and average scores
+          achieved by agents for each parameter combination. Note: each cell
+          represents 500 generations with 500 individuals playing 3 games each —
+          750,000 games per cell. One cell took over half an hour locally. All
+          tests use seed = 42. Graph placement corresponds to table cells.
+        </p>
+
+        <h4>Result tables</h4>
+        <p>
+          Best overall score, average score, best score in the last generation
+          and average score in the last generation are shown below.
+        </p>
+        <div class="grid">
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_002_01.png"
+              alt="e=0.002 m=0.01"
+            />
+            <div>e=0.002, m=0.01</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_002_05.png"
+              alt="e=0.002 m=0.05"
+            />
+            <div>e=0.002, m=0.05</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_002_1.png"
+              alt="e=0.002 m=0.1"
+            />
+            <div>e=0.002, m=0.1</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_002_2.png"
+              alt="e=0.002 m=0.2"
+            />
+            <div>e=0.002, m=0.2</div>
+          </div>
+
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_01_01.png"
+              alt="e=0.01 m=0.01"
+            />
+            <div>e=0.01, m=0.01</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_01_05.png"
+              alt="e=0.01 m=0.05"
+            />
+            <div>e=0.01, m=0.05</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_01_1.png"
+              alt="e=0.01 m=0.1"
+            />
+            <div>e=0.01, m=0.1</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_01_2.png"
+              alt="e=0.01 m=0.2"
+            />
+            <div>e=0.01, m=0.2</div>
+          </div>
+
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_05_01.png"
+              alt="e=0.05 m=0.01"
+            />
+            <div>e=0.05, m=0.01</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_05_05.png"
+              alt="e=0.05 m=0.05"
+            />
+            <div>e=0.05, m=0.05</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_05_1.png"
+              alt="e=0.05 m=0.1"
+            />
+            <div>e=0.05, m=0.1</div>
+          </div>
+          <div class="card">
+            <img
+              class="resp"
+              src="assets/Snake_ai_05_2.png"
+              alt="e=0.05 m=0.2"
+            />
+            <div>e=0.05, m=0.2</div>
+          </div>
+        </div>
+
+        <h2 id="conclusion">Conclusion</h2>
+        <p>
+          From the observed results we infer that the evolutionary algorithm
+          performs best for training neural networks to play Snake with elitism
+          = 0.002 and mutation = 0.05.
+        </p>
+
+        <p>
+          Interestingly, elitism = 0.002 in a population of 500 means a single
+          agent is selected (N*e = 1), so only the top individual moves to the
+          next generation. Another observation: most evolutions showed the
+          largest point increases around generation ~200+. High mutation rates
+          sped up learning but results were less stable. From standard deviation
+          and average scores, mutation = 0.05 produced fast but sustainable
+          improvements.
+        </p>
+      </article>
+    </main>
+
+    <footer>
+      <p>Michal Štefaňák 2024</p>
+    </footer>
+  </body>
+</html>
+
